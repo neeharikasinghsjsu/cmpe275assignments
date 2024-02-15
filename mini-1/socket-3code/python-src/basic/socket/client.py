@@ -63,4 +63,3 @@ if __name__ == '__main__':
             break
         else:
             clt.sendMsg(m)
-            clt.sendMsg(m)

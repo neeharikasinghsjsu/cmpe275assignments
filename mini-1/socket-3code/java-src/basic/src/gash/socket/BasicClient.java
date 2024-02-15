@@ -40,16 +40,18 @@ public class BasicClient {
 		this.group = group;
 	}
 
-	public void connect() {
+	public boolean connect() {
 		if (this.clt != null) {
-			return;
+			return false;
 		}
 
 		try {
 			this.clt = new Socket(this.ipaddr, this.port);
 			System.out.println("Connected to " + clt.getInetAddress().getHostAddress());
+            return true;
 		} catch (Exception e) {
 			e.printStackTrace();
+            return false;
 		}
 	}
 

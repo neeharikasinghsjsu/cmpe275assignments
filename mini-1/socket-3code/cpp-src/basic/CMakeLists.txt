@@ -40,7 +40,7 @@ else ()
    message(FATAL_ERROR "Using the wrong compiler, clang 16+, or gcc 12+")
 endif()
 
-find_package(Boost 1.55 REQUIRED)
+find_package(Boost 1.84 REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR})
 

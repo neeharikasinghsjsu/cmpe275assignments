@@ -13,8 +13,6 @@ import gash.socket.BasicClient;
  * 
  */
 public class ClientApp {
-	private BasicClient myClient;
-
 	public ClientApp() {
 	}
 
