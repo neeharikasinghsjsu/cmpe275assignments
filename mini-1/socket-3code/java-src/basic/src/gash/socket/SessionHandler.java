@@ -15,15 +15,28 @@ import gash.payload.Message;
  */
 class SessionHandler extends Thread {
 	private Socket connection;
-	private String name;
 	private boolean forever = true;
-	
+    private long lastReadTime = 0;
 
-	public SessionHandler(Socket connection) {
+    private final SessionEventsDispatcher sessionEventsDispatcher;
+
+	public SessionHandler(Socket connection, SessionEventsDispatcher sessionEventsDispatcher) {
 		this.connection = connection;
-		
+		this.sessionEventsDispatcher = sessionEventsDispatcher;
 		// allow server to exit if
 		this.setDaemon(true);
+	}
+
+    public Socket getConnection() {
+        return connection;
+    }
+
+	public void stopSessionSafely() throws Exception {
+		forever = false;
+        while (connection.getInputStream().available() > 0) {
+            Thread.sleep(10);
+        }
+        stopSession();
 	}
 
 	/**
@@ -33,9 +46,10 @@ class SessionHandler extends Thread {
 		forever = false;
 		if (connection != null) {
 			try {
-				connection.close();
+                sessionEventsDispatcher.onConnectionClose(connection);
+				connection.close();  
 			} catch (Exception e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 		}
 		connection = null;
@@ -50,10 +64,7 @@ class SessionHandler extends Thread {
 		try {
 			connection.setSoTimeout(2000);
 			var in = new BufferedInputStream(connection.getInputStream());
-
-			if (in == null)
-				throw new RuntimeException("Unable to get input streams");
-
+            
 			byte[] raw = new byte[2048];
 			BasicBuilder builder = new BasicBuilder();
 			while (forever) {
@@ -66,15 +77,18 @@ class SessionHandler extends Thread {
 
 					Message msg = builder.decode(new String(raw, 0, len).getBytes());
 					System.out.println(msg);
-					
+                    lastReadTime = System.currentTimeMillis();
 				} catch (InterruptedIOException ioe) {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+            if (forever != false) {
+			    e.printStackTrace();
+            }
+
 		} finally {
 			try {
-				System.out.println("Session " + this.getId() + " ending");
+				System.out.println("Session " + this.threadId() + " ending");
 				System.out.flush();
 				stopSession();
 			} catch (Exception re) {
@@ -82,5 +96,9 @@ class SessionHandler extends Thread {
 			}
 		}
 	}
+
+    public long getLastReadTime() {
+        return lastReadTime;
+    }
 
 } // class SessionHandler

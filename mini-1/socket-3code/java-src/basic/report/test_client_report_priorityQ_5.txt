@@ -1,0 +1,8 @@
+numFailed:0.0
+numConnected:500.0
+max-qps:98356.05
+Latency Report for client-sent
+p50:0.0ms
+p90:0.0ms
+p99:9.0ms
+avg:1.119342428694989ms

@@ -1,0 +1,5 @@
+Latency Report for connection
+p50:0.0ms
+p90:1.0ms
+p99:1.0ms
+avg:0.24ms

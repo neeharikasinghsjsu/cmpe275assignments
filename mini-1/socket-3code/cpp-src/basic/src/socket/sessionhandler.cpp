@@ -105,10 +105,15 @@
          
          if (n > 0) {
             idle = false;
-            auto results = splitter(session,raw,n);
-            session.incr(results.size());
-            process(results);
-            results.clear();
+            try {
+                auto results = splitter(session,raw,n);
+                session.incr(results.size());
+                process(results);
+                results.clear();
+            } catch(...) {
+                // special error handling
+                break;
+            }
          } else if (n == -1) {
             if (errno == EWOULDBLOCK) {} /*read timeout - okay*/
             else if (errno == ECONNRESET) {
@@ -140,6 +145,7 @@
       for (auto s : results) {
          auto m = b.decode(s);
       
+        // can create a new thread here to make it nonblocking in case of heavy processsing or network call.
          // PLACEHOLDER: now do something with the message
          std::cerr << "M: [" << m.group() << "] " << m.name() << " - " 
                   << m.text() << std::endl;
@@ -216,6 +222,9 @@
                // message is incomplete, push to overflow
                pos = len;
                continue;
+            } else if (mlen > 2047 - 5) {
+                // only 2048 total buffer size is read
+                throw SessionExceedMessageLengthException();
             }
 
             auto msg = std::string(&ptr[pos],0,mlen+5);
@@ -229,7 +238,7 @@
          } catch (const std::exception &e) {
             std::stringstream err;
             err << "error processing raw: " << e.what() << std::endl;
-            throw std::runtime_error(err.str());
+            throw SessionMessageSplitterException(err.str());
          }
       }
 

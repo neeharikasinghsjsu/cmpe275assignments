@@ -9,6 +9,23 @@
 
 namespace basic {
 
+class SessionExceedMessageLengthException : public std::exception {
+    public:
+    const char * what () {
+        return "Exceeded supported message length";
+    }
+};
+
+class SessionMessageSplitterException : public std::exception {
+    public:
+    SessionMessageSplitterException(std::string msg) : message(msg) {}
+    const char * what () {
+        return message.c_str();
+    }
+    private:
+    std::string message;
+};
+
 /**
  * @brief container for managing session metadata
 */

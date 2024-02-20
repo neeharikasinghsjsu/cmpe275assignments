@@ -14,16 +14,19 @@ public class BasicServer {
 	private int port;
 	private ServerSocket socket;
 	private boolean forever = true;
+
+    private ReportService serverReport;
 	
 	public BasicServer(String host, int port) {
 		this.host = host;
 		this.port = port;
+        serverReport = new ReportService();
 	}
 
 	/**
 	 * start monitoring socket for new connections
 	 */
-	public void start() {
+	public void start(ConnectionHandler connectionHandler) {
 		try {
 			socket = new ServerSocket(port);
 
@@ -36,11 +39,25 @@ public class BasicServer {
 				}
 
 				System.out.println("--> server got a client connection");
-				var sh = new SessionHandler(s);
-				sh.start();
+                
+                LatencyCalculator latencyCalculator = new LatencyCalculator();
+                connectionHandler.handleConnection(s);
+                latencyCalculator.end();
+                serverReport.addLatencyReport("connection", latencyCalculator);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+        if (socket != null) {
+            try {
+                socket.close();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
 	}
+
+    public ReportService getServerReport() {
+        return serverReport;
+    }
 }
