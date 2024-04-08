@@ -100,7 +100,7 @@ void flushAll(int worldRank, const WorldCommonInfo &worldCommonInfo, const std::
     {
         sitenames.push_back(pair.first);
     }
-#pragma omp parallel for schedule(dynamic) num_threads(2)
+#pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < sitenames.size(); ++i)
     {
         const auto &sitename = sitenames[i];
@@ -235,7 +235,7 @@ void sitenameFileConsolidationWork(int worldRank, const WorldCommonInfo &worldCo
             sitenames.push_back(sitename);
         }
     }
-#pragma omp parallel for schedule(dynamic) num_threads(2)
+#pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < sitenames.size(); ++i)
     {
         std::string path = rankDir + "/" + sitenames[i];
@@ -273,14 +273,18 @@ int millisFromNow(std::chrono::time_point<std::chrono::high_resolution_clock> st
 int main(int argc, char **argv)
 {
     auto start = std::chrono::high_resolution_clock::now();
-    if (argc != 3)
+    if (argc != 4)
     {
-        std::cerr << "Usage: " << argv[0] << " <input_directory> <output_directory>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <input_directory> <output_directory> <num_threads>" << std::endl;
         return 1;
     }
 
     std::string inputDirectory = argv[1];
     std::string outputDirectory = argv[2];
+    int numThreads = std::stoi(argv[3]);
+
+    // Set the number of OpenMP threads
+    omp_set_num_threads(numThreads);
 
     MPI_Init(&argc, &argv);
 
